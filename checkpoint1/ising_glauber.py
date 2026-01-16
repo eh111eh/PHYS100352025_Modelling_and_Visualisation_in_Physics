@@ -10,9 +10,7 @@ J = 1.0             # Coupling constant
 steps_per_frame = L * L  # One Monte Carlo sweep per frame
 
 # ------- Initialise lattice -------
-"""
-Initialise a 2D Ising lattice with random spins +-1.
-"""
+"""Initialise a 2D Ising lattice with random spins +-1."""
 rng = np.random.default_rng()
 spins = rng.choice([-1, 1], size=(L, L))
 
@@ -48,7 +46,10 @@ def glauber_step():
 
 # ------- Animation function -------
 def update(frame):
-    """Perform several Glauber steps per animation frame."""
+    """
+    Perform several Glauber steps per animation frame.
+    Each animation frame corresponds to one Monte Carlo sweep, after which the spin configuration is updated on the screen.
+    """
     for _ in range(steps_per_frame):
         glauber_step()
 
@@ -56,6 +57,10 @@ def update(frame):
     return [im]
 
 # ------- Plot setup -------
+"""
+I visualise the lattice using a colour map where red and blue correspond to spin up and spin down.
+The title indicates the dynamics and temperature, and I remove axis ticks for clarity.
+"""
 fig, ax = plt.subplots()
 im = ax.imshow(
     spins,
@@ -70,6 +75,9 @@ ax.set_xticks([])
 ax.set_yticks([])
 
 # ------- Run animation -------
+"""
+Finally, I run the animation to visualise the time evolution of the Kawasaki dynamics
+"""
 ani = animation.FuncAnimation(
     fig,
     update,
