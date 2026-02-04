@@ -1,66 +1,53 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+import os
+from numba import njit
+
+# ------- Directory Setup -------
+base_dir = "checkpoint1"
+figures_dir = os.path.join(base_dir, "figures")
+os.makedirs(figures_dir, exist_ok=True)
 
 # ------- Parameters -------
-L = 50              # Lattice size (L x L)
-T = 10.0             # Thermal energy k_B T
+L = 50              
+T = 2.27             # Set near critical temperature for interesting visuals
 beta = 1.0 / T
-J = 1.0             # Coupling constant
-steps_per_frame = L * L  # One Monte Carlo sweep per frame
+J = 1.0             
+steps_per_frame = L * L  
+n_frames = 200
 
 # ------- Initialise lattice -------
-"""Initialise a 2D Ising lattice with random spins +-1."""
 rng = np.random.default_rng()
-spins = rng.choice([-1, 1], size=(L, L))
+spins = rng.choice(np.array([-1, 1], dtype=np.int32), size=(L, L))
 
-# ------- Helper functions -------
-"""
-I made the system using Glauber dynamics, where at each step a random spin
-is selected and flipped according to the acceptance rule based on the local energy change.
-The energy change depends only on the four nearest neighbours
-"""
-def neighbours_sum(x, y):
-    """Sum of nearest neighbours with periodic boundary conditions."""
-    return (
-        spins[(x + 1) % L, y] +
-        spins[(x - 1) % L, y] +
-        spins[x, (y + 1) % L] +
-        spins[x, (y - 1) % L]
-    )
+# ------- Numba Accelerated Functions -------
+@njit
+def glauber_step_fast(spins, L, beta, J):
+    """Performs one full Monte Carlo sweep (L*L steps) using Numba."""
+    for _ in range(L * L):
+        x = np.random.randint(0, L)
+        y = np.random.randint(0, L)
+        
+        # Periodic boundaries
+        nb_sum = (spins[(x + 1) % L, y] + spins[(x - 1) % L, y] + 
+                  spins[x, (y + 1) % L] + spins[x, (y - 1) % L])
+        
+        dE = 2.0 * J * spins[x, y] * nb_sum
 
-def deltaE_glauber(x, y):
-    """Energy change for flipping one spin."""
-    return 2 * J * spins[x, y] * neighbours_sum(x, y)
-
-def glauber_step():
-    """Single Glauber update."""
-    x, y = rng.integers(0, L, size=2)
-    dE = deltaE_glauber(x, y)
-
-    if dE <= 0:
-        spins[x, y] *= -1
-    else:
-        if rng.random() < np.exp(-beta * dE):
+        if dE <= 0 or np.random.random() < np.exp(-beta * dE):
             spins[x, y] *= -1
+    return spins
 
 # ------- Animation function -------
 def update(frame):
-    """
-    Perform several Glauber steps per animation frame.
-    Each animation frame corresponds to one Monte Carlo sweep, after which the spin configuration is updated on the screen.
-    """
-    for _ in range(steps_per_frame):
-        glauber_step()
-
+    global spins
+    # Perform one sweep per frame
+    spins = glauber_step_fast(spins, L, beta, J)
     im.set_data(spins)
     return [im]
 
 # ------- Plot setup -------
-"""
-I visualise the lattice using a colour map where red and blue correspond to spin up and spin down.
-The title indicates the dynamics and temperature, and I remove axis ticks for clarity.
-"""
 fig, ax = plt.subplots()
 im = ax.imshow(
     spins,
@@ -70,20 +57,29 @@ im = ax.imshow(
     animated=True
 )
 
-ax.set_title(f"Glauber Dynamics Ising Model (T = {T})")
+ax.set_title(f"Glauber Dynamics (T = {T})")
 ax.set_xticks([])
 ax.set_yticks([])
 
-# ------- Run animation -------
-"""
-Finally, I run the animation to visualise the time evolution of the Kawasaki dynamics
-"""
+# ------- Run & Save Animation -------
 ani = animation.FuncAnimation(
     fig,
     update,
-    frames=200,
+    frames=n_frames,
     interval=50,
     blit=True
 )
+
+# Save the animation
+# Note: Requires 'pillow' for .gif or 'ffmpeg' for .mp4
+save_path = os.path.join(figures_dir, "glauber_animation.gif")
+print(f"Saving animation to {save_path}...")
+
+try:
+    ani.save(save_path, writer='pillow', fps=20)
+    print("Animation saved successfully.")
+except Exception as e:
+    print(f"Error saving animation: {e}")
+    print("Make sure you have 'pillow' installed (pip install pillow).")
 
 plt.show()
