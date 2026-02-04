@@ -71,7 +71,6 @@ ani = animation.FuncAnimation(
 )
 
 # Save the animation
-# Note: Requires 'pillow' for .gif or 'ffmpeg' for .mp4
 save_path = os.path.join(figures_dir, "glauber_animation.gif")
 print(f"Saving animation to {save_path}...")
 

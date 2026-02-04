@@ -51,7 +51,7 @@ def kawasaki_sweep(spins, L, beta, J):
                 (dx == L-1 and dy == 0) or (dx == 0 and dy == L-1)
         
         if is_nn:
-            # Correction: subtracting the mutual bond to avoid double counting
+            # Subtracting the mutual bond to avoid double counting
             dE = 2 * J * (s1 * (get_neighbours_sum(spins, x1, y1, L) - s2) + 
                           s2 * (get_neighbours_sum(spins, x2, y2, L) - s1))
         else:

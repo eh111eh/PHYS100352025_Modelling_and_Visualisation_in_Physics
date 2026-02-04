@@ -18,7 +18,7 @@ steps_per_frame = L * L
 n_frames = 200
 
 # ------- Initialise lattice -------
-# Note: Kawasaki conserves magnetization, so we start with a fixed ratio
+# Kawasaki conserves magnetization, so we start with a fixed ratio
 rng = np.random.default_rng()
 spins = rng.choice(np.array([-1, 1], dtype=np.int32), size=(L, L))
 
@@ -88,7 +88,6 @@ save_path = os.path.join(figures_dir, "kawasaki_animation.gif")
 print(f"Saving animation to {save_path}...")
 
 try:
-    # Requires 'pillow' library: pip install pillow
     ani.save(save_path, writer='pillow', fps=20)
     print("Animation saved successfully.")
 except Exception as e:

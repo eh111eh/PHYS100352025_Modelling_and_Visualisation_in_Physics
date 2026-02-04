@@ -42,7 +42,7 @@ def run_simulation():
     N = L * L               
     J = 1.0                 
     T_range = np.arange(1.0, 3.1, 0.1)  
-    n_equil = 500           # We can afford more sweeps now!
+    n_equil = 500
     n_measurements = 1000   
     n_decorrelate = 10      
 

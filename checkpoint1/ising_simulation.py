@@ -4,7 +4,6 @@ from matplotlib import animation
 import argparse
 
 # ------- Command-line arguments -------
-"""I use command-line arguments to allow the user to choose the system size, temperature, and type of dynamics when running the code."""
 parser = argparse.ArgumentParser(
     description="2D Ising model with Glauber or Kawasaki dynamics"
 )
@@ -34,7 +33,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 # ------- Parameters -------
-"""Here I define the physical parameters of the Ising model. One Monte Carlo sweep corresponds to L squared update attempts."""
 L = args.L
 T = args.T
 beta = 1.0 / T
@@ -42,7 +40,6 @@ J = 1.0
 steps_per_frame = L * L
 
 # ------- Initialise lattice -------
-"""I initialise the lattice with random spins +-1. For Kawasaki dynamics, this initial magnetisation will be conserved."""
 rng = np.random.default_rng()
 spins = rng.choice([-1, 1], size=(L, L))
 
@@ -59,7 +56,6 @@ def neighbours_sum(x, y):
     )
 
 # ------- Glauber dynamics -------
-"""In Glauber dynamics, I randomly select one spin and attempt to flip it using the Metropolis acceptance rule."""
 def deltaE_glauber(x, y):
     """
     Energy change for flipping a single spin.
@@ -80,7 +76,6 @@ def glauber_step():
             spins[x, y] *= -1
 
 # ------- Kawasaki dynamics -------
-"""In Kawasaki dynamics, I exchange two randomly chosen spins, conserving magnetisation. The energy change is computed using the simultaneous-exchange method."""
 def deltaE_kawasaki(x1, y1, x2, y2):
     """
     Energy change for exchanging two spins using the simultaneous-exchange method.
@@ -126,7 +121,6 @@ def kawasaki_step():
             spins[x1, y1], spins[x2, y2] = spins[x2, y2], spins[x1, y1]
 
 # ------- Animation update -------
-"""Depending on the chosen dynamics, the update function applies either Glauber or Kawasaki updates."""
 def update(frame):
     """
     One animation frame corresponds to one Monte Carlo sweep.
