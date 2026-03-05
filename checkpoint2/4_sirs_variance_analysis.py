@@ -24,53 +24,40 @@ def update_sirs(grid, p1, p2, p3):
 
     return new_grid
 
-def get_variance_jackknife(p1, p2, p3, size=50, eq_sweeps=500, run_sweeps=10000, num_blocks=20):
-    """
-    Calculates variance and error bars using the Jackknife Resampling method.
-    """
+def get_variance_jackknife(p1, p2, p3, size=50, eq_sweeps=500, run_sweeps=10000):
     grid = np.random.choice([0, 1, 2], size=(size, size))
+    L_site = size
     N_sites = size * size
 
     # 1. Equilibration
     for _ in range(eq_sweeps):
         grid = update_sirs(grid, p1, p2, p3)
 
-    # 2. Measurement: Collect all raw data
-    raw_infected = []
+    # 2. Measurement
+    N_I = []
     for _ in range(run_sweeps):
         grid = update_sirs(grid, p1, p2, p3)
-        raw_infected.append(np.count_nonzero(grid == 1))
+        N_I.append(np.count_nonzero(grid == 1))
     
-    raw_infected = np.array(raw_infected)
+    N_I = np.array(N_I, dtype=float)
+    n = len(N_I)
     
-    # 3. Binning: Divide data into blocks to reduce autocorrelation
-    block_size = run_sweeps // num_blocks
-    # Calculate means of I and I^2 for each block
-    block_I = np.array([np.mean(raw_infected[i*block_size : (i+1)*block_size]) for i in range(num_blocks)])
-    block_I2 = np.array([np.mean(raw_infected[i*block_size : (i+1)*block_size]**2) for i in range(num_blocks)])
+    # 3. C = (<I^2> - <I>^2) / L^2
+    c_true = (np.mean(N_I**2) - np.mean(N_I)**2) / (L_site * L_site)
 
     # 4. Jackknife Procedure
-    # chi = (<I^2> - <I>^2) / N_sites
-    jk_variances = []
-    for i in range(num_blocks):
-        # exclude i-th block and calculate average of the rest
-        sum_I = (np.sum(block_I) - block_I[i]) / (num_blocks - 1)
-        sum_I2 = (np.sum(block_I2) - block_I2[i]) / (num_blocks - 1)
-        
-        var_jk = (sum_I2 - sum_I**2) / N_sites
-        jk_variances.append(var_jk)
+    sum_I = np.sum(N_I)
+    sum_I2 = np.sum(N_I**2)
+
+    mean_resample = (sum_I - N_I) / (n - 1)
+    mean_resample_sq = (sum_I2 - N_I**2) / (n - 1)
+
+    ci = (mean_resample_sq - mean_resample**2) / (L_site * L_site)
+
+    # sqrt(sum((ci - c_true)**2))
+    error = np.sqrt(np.sum((ci - c_true)**2))
     
-    jk_variances = np.array(jk_variances)
-    
-    # Final estimate: average of all blocks
-    mean_I = np.mean(block_I)
-    mean_I2 = np.mean(block_I2)
-    final_variance = (mean_I2 - mean_I**2) / N_sites
-    
-    # Jackknife Error formula: sqrt((K-1)/K * sum((jk_i - mean_jk)^2))
-    error = np.sqrt((num_blocks - 1) * np.var(jk_variances))
-    
-    return final_variance, error
+    return c_true, error
 
 def run_variance_analysis():
     P_IR = 0.5
