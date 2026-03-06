@@ -29,6 +29,7 @@ def get_avg_infection(p1, p2, p3, size=50, eq_sweeps=100, run_sweeps=500):
     grid = np.random.choice([0, 1, 2], size=(size, size))
     
     # 1. Equilibration
+    # Run 100 iterations in advance until initial randomness fades and the system reaches a stable state.
     for _ in range(eq_sweeps):
         grid = update_sirs(grid, p1, p2, p3)
         
@@ -36,25 +37,32 @@ def get_avg_infection(p1, p2, p3, size=50, eq_sweeps=100, run_sweeps=500):
     counts = []
     for _ in range(run_sweeps):
         grid = update_sirs(grid, p1, p2, p3)
+        # Count the number of infected individuals (1) in the current grid and store it in a list.
         counts.append(np.count_nonzero(grid == 1))
-        
+
+    # Divide the average number of infected individuals by the total number of grid cells (size x size) to return the average infection rate.   
     return np.mean(counts) / (size * size)
 
 def generate_heatmap():
+    """
+    Run experiments across all combinations of infection probability (P_{SI})
+    and immunity loss probability (P_{RS}).
+    """
     # Parameters
     size = 50
-    p2 = 0.5  # Fixed P_IR
-    resolution = 0.05
-    p_values = np.arange(0, 1.0001, resolution)
+    p2 = 0.5  # Fixed recovery probability P_IR
+    resolution = 0.05 # Test from 0 to 1 in 0.05 increments (21 steps).
+    p_values = np.arange(0, 1.0001, resolution) # Create a test list by dividing the probability into 5% increments from 0% to 100%.
     
-    grid_size = len(p_values)
+    grid_size = len(p_values) # Number of probability test points.
     heatmap_data = np.zeros((grid_size, grid_size))
 
     print(f"Starting Heatmap Generation ({grid_size}x{grid_size} points)...")
 
+    # Run nested loops to simulate all probability combinations.
     for i, p1 in enumerate(p_values):      # x-axis: P_SI
         for j, p3 in enumerate(p_values):  # y-axis: P_RS
-            heatmap_data[j, i] = get_avg_infection(p1, p2, p3, size=size)
+            heatmap_data[j, i] = get_avg_infection(p1, p2, p3, size=size) # Save the average infection rate at each coordinate (j, i).
         
         print(f"Progress: {((i+1)/grid_size)*100:.1f}%")
 

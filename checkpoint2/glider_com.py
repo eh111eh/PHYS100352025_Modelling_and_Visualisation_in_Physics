@@ -50,12 +50,12 @@ for t in range(200):
             
             # PBC Correction: Minimum Image Convention
             for i in range(2):
-                if diff[i] > N/2:
+                if diff[i] > N/2: # prev = 0.8, curr = 49.7 -> diff = +48.9, corrected diff = -1.1 to the left
                     diff[i] -= N
-                elif diff[i] < -N/2:
+                elif diff[i] < -N/2: # prev = 49.2, curr = 0.3 -> diff = -48.9, corrected diff = +1.1 to the right
                     diff[i] += N
             
-            unwrapped_com = unwrapped_com + diff
+            unwrapped_com = unwrapped_com + diff # corrected diff is added
         
         times.append(t)
         com_positions.append(unwrapped_com.copy())

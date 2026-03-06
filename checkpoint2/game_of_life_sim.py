@@ -38,12 +38,6 @@ def get_initial_state(mode, size):
         grid[4, 2:5] = 1
     return grid
 
-def calculate_com(grid):
-    """Calculates the center of mass of active sites."""
-    active_sites = np.argwhere(grid == 1)
-    if len(active_sites) == 0: return None
-    return np.mean(active_sites, axis=0)
-
 def animate(i, img, grid_ref, ax, title_base):
     grid_ref[0] = update_grid(grid_ref[0])
     img.set_data(grid_ref[0])

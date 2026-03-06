@@ -7,8 +7,8 @@ os.makedirs("fig", exist_ok=True)
 os.makedirs("data", exist_ok=True)
 
 N = 50
-MAX_STEPS = 5000       
-NUM_SIMULATIONS = 1000 
+MAX_STEPS = 5000
+NUM_SIMULATIONS = 1000
 
 def update_grid(grid):
     neighbors = (

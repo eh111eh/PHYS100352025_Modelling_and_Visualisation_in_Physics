@@ -30,10 +30,14 @@ def get_variance_jackknife(p1, p2, p3, size=50, eq_sweeps=500, run_sweeps=10000)
     N_sites = size * size
 
     # 1. Equilibration
+    # Run 500 (eq_sweeps) pre-simulations before collecting data to ensure 
+    # the initial randomness doesn't bias the system's statistical properties.
     for _ in range(eq_sweeps):
         grid = update_sirs(grid, p1, p2, p3)
 
     # 2. Measurement
+    # Start the main simulation immediately after equilibrium is reached.
+    # Run one simulation step (update_sirs) -> count the current number of infected individuals -> record it in the list (N_I).
     N_I = []
     for _ in range(run_sweeps):
         grid = update_sirs(grid, p1, p2, p3)
@@ -42,18 +46,23 @@ def get_variance_jackknife(p1, p2, p3, size=50, eq_sweeps=500, run_sweeps=10000)
     N_I = np.array(N_I, dtype=float)
     n = len(N_I)
     
-    # 3. C = (<I^2> - <I>^2) / L^2
+    # 3. Calculate the true variance
+    # C = (<I^2> - <I>^2) / L^2
     c_true = (np.mean(N_I**2) - np.mean(N_I)**2) / (L_site * L_site)
 
     # 4. Jackknife Procedure
+    # Calculate the error by observing how the statistics change when data points are removed one by one
     sum_I = np.sum(N_I)
     sum_I2 = np.sum(N_I**2)
 
     mean_resample = (sum_I - N_I) / (n - 1)
     mean_resample_sq = (sum_I2 - N_I**2) / (n - 1)
 
+    # A collection of jacknife replicates (pseudo-values) calculated by excluding the ith data point.
     ci = (mean_resample_sq - mean_resample**2) / (L_site * L_site)
 
+    # Calculate the standard deviation of the jacknife estimates.
+    # Sum the differences between the results obtained by excluding the ith data point and the original c_{true}.
     # sqrt(sum((ci - c_true)**2))
     error = np.sqrt(np.sum((ci - c_true)**2))
     
@@ -67,6 +76,8 @@ def run_variance_analysis():
     os.makedirs('fig', exist_ok=True)
     os.makedirs('data', exist_ok=True)
     
+    # Pick 20 values for the infection probability (P_{SI}) at regular intervals between 0.2 and 0.5.
+    # As seen in the heatmap, this range contains the critical point that determines whether the epidemic will break out or die out.
     p_si_values = np.linspace(0.2, 0.5, 20)
     variances = []
     errors = []
@@ -74,6 +85,7 @@ def run_variance_analysis():
     print(f"Starting Jacknife Variance Analysis (P_RS={P_RS}, size={size})")
 
     for p1 in p_si_values:
+        # Calculate the Jacknife variance and error for each P_{SI} (infection probability).
         v, err = get_variance_jackknife(p1, P_IR, P_RS, size=size)
         variances.append(v)
         errors.append(err)

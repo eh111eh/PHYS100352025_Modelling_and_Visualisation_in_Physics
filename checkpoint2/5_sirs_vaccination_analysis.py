@@ -25,7 +25,7 @@ def update_sirs_with_immunity(grid, immune_mask, p1, p2, p3):
 
     new_grid[mask_S_to_I] = I
     new_grid[mask_I_to_R] = R
-    new_grid[mask_R_to_S] = S
+    new_grid[mask_R_to_S] = S # Permanent immune individuals are excluded and remain in the R
 
     return new_grid
 
@@ -51,6 +51,7 @@ def get_avg_infection_with_f_im(f_im, p1, p2, p3, size=50, eq_sweeps=100, run_sw
     infected_fractions = []
     for _ in range(run_sweeps):
         grid = update_sirs_with_immunity(grid, immune_mask, p1, p2, p3)
+        # Store the infected population fraction in the infected_fractions list.
         infected_fractions.append(np.count_nonzero(grid == 1) / N)
         
     return np.mean(infected_fractions)
@@ -60,7 +61,7 @@ def run_vaccination_study():
     p1 = p2 = p3 = 0.5
     size = 50
     
-    # Immune fraction range from 0 (no immunity) to 1 (all immune)
+    # Immune fraction range from 0 (no immunity) to 1 (all immune): 21 levels
     f_im_values = np.linspace(0, 1.0, 21)
     avg_infections = []
 
@@ -71,6 +72,7 @@ def run_vaccination_study():
         # Write a header for the datafile
         f_data.write("# f_Im\tAvg_Infected_Fraction\n")
         
+        # Run the simulation for each vaccination rate (f) to calculate the average infection fraction.
         for f in f_im_values:
             mean_i = get_avg_infection_with_f_im(f, p1, p2, p3, size=size)
             avg_infections.append(mean_i)

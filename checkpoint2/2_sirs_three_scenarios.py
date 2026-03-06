@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -34,14 +36,14 @@ def update_sirs(grid, P_SI, P_IR, P_RS):
 
     return new_grid
 
-def compare_scenarios_vectorized():
-    size = 100 # Increased size as vectorized update is much faster
+def compare_scenarios():
+    size = 100
     
     # Define scenarios with (P_SI, P_IR, P_RS)
     scenarios = [
-        {"name": "Absorbing State", "p": (0.2, 0.5, 0.5)},
-        {"name": "Dynamic Equilibrium", "p": (0.5, 0.5, 0.5)},
-        {"name": "Cyclic Waves", "p": (0.9, 0.1, 0.01)}
+        {"name": "Absorbing State", "p": (0.2, 0.5, 0.5)}, # Infection vanishes quickly, leaving everyone in the S (Susceptible) state.
+        {"name": "Dynamic Equilibrium", "p": (0.5, 0.5, 0.5)}, # Dynamic equilibrium, where infection and recovery rates balance out.
+        {"name": "Cyclic Waves", "p": (0.9, 0.1, 0.01)} # Cyclical infection, moving through the population like a wave.
     ]
 
     # Initialize grids for each scenario
@@ -76,8 +78,8 @@ def compare_scenarios_vectorized():
     ani = animation.FuncAnimation(fig, animate, frames=300, interval=30, blit=True)
     
     # Adjust layout to prevent overlap with titles/colorbar
-    plt.tight_layout(rect=[0, 0.15, 1, 0.95])
+    plt.subplots_adjust(bottom=0.2, top=0.9, left=0.05, right=0.95, wspace=0.2)
     plt.show()
 
 if __name__ == "__main__":
-    compare_scenarios_vectorized()
+    compare_scenarios()
