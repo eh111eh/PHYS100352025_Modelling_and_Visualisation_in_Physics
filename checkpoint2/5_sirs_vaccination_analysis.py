@@ -46,7 +46,7 @@ def get_avg_infection_with_f_im(f_im, p1, p2, p3, size=50, eq_sweeps=100, run_sw
     # 1. Equilibration
     for _ in range(eq_sweeps):
         grid = update_sirs_with_immunity(grid, immune_mask, p1, p2, p3)
-        
+
     # 2. Measurement
     infected_fractions = []
     for _ in range(run_sweeps):
@@ -68,7 +68,7 @@ def run_vaccination_study():
     print(f"Starting Immunity Study (P_SI=P_IR=P_RS=0.5)...")
 
     # Open a file to save the numerical data
-    with open('data/vaccination_data.txt', 'w') as f_data:
+    with open('checkpoint2/data/vaccination_data.txt', 'w') as f_data:
         # Write a header for the datafile
         f_data.write("# f_Im\tAvg_Infected_Fraction\n")
         
@@ -93,9 +93,9 @@ def run_vaccination_study():
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
     
     # Optional: Mark the point where infection is prevented (close to 0)
-    plt.axhline(0, color='red', linestyle='-', alpha=0.3)
+    # plt.axhline(0, color='red', linestyle='-', alpha=0.3)
     
-    plt.savefig('fig/sirs_vaccination_study.png', dpi=300)
+    plt.savefig('checkpoint2/fig/sirs_vaccination_study.png', dpi=300)
     print("\nPlot saved as 'sirs_vaccination_study.png'")
     plt.show()
 
